@@ -16,7 +16,7 @@ type Battery struct {
 
 func (b *Battery) String() string {
 	return fmt.Sprintf(
-		"battery : %d, status : %s",
+		"battery : %d%%, status : %s",
 		b.capacity,
 		b.status)
 }
