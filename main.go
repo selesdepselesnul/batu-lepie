@@ -6,6 +6,7 @@ import (
 	"strings"
 	"strconv"
 	"regexp"
+	"os"
 )
 
 type Battery struct {
@@ -80,7 +81,27 @@ func readBattery() *Battery {
 }
 
 func main() {
-	fmt.Println(readBattery())
+
+	args := os.Args
+
+	if len(args) == 2 {
+		switch arg := args[1]; arg {
+		case "--all":
+			battery := readBattery()
+			fmt.Println("battery : " + strconv.Itoa(battery.capacity) + "%, status : " + battery.status)
+		case "--capacity":
+			capacity, _ := readCapacity()
+			fmt.Println(capacity)
+		case "--status":
+			status, _ := readStatus()
+			fmt.Println(*status)
+		default:
+			fmt.Println("argument doesnt valid !")
+		} 
+	} else {
+		fmt.Println("please fill the argument !")
+	}
+
 }
 
 
