@@ -45,22 +45,26 @@ func readStatus() (*string, error) {
 	return &statusStr, nil
 }
 
-func readBattery() (*Battery, error) {
+func readBattery() *Battery {
 	
-	capacity, errCapacity := readCapacity()
-	status, errStatus := readStatus()
+	capacityChan := make(chan int)
+	statusChan := make(chan string)
+
+	go func() {
+		capacity, _ := readCapacity()
+        capacityChan <- capacity
+    }()
 	
-	if errCapacity != nil || errStatus != nil {
-		if errCapacity != nil {
-			return nil, errCapacity
-		} else {
-			return nil, errStatus
-		}
-	}
-	
-	return &Battery{capacity: capacity, status: *status}, nil
+    go func() {
+		status, _ := readStatus()
+        statusChan <- *status
+    }()
+
+	return &Battery{capacity: <-capacityChan, status: <-statusChan}
 }
 
 func main() {
 	fmt.Println(readBattery())
 }
+
+
