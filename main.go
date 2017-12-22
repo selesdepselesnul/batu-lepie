@@ -14,6 +14,13 @@ type Battery struct {
 	status string
 }
 
+func (b *Battery) String() string {
+	return fmt.Sprintf(
+		"battery : %d, status : %s",
+		b.capacity,
+		b.status)
+}
+
 const powerSupplyPath = "/sys/class/power_supply/"
 
 func readBatteryVendor() string {
@@ -58,7 +65,7 @@ func readStatus() (*string, error) {
 		return nil, err
 	}
 
-	statusStr := trimNL(status)
+	statusStr := strings.ToLower(trimNL(status))
 	return &statusStr, nil
 }
 
@@ -87,8 +94,7 @@ func main() {
 	if len(args) == 2 {
 		switch arg := args[1]; arg {
 		case "--all":
-			battery := readBattery()
-			fmt.Println("battery : " + strconv.Itoa(battery.capacity) + "%, status : " + battery.status)
+			fmt.Println(readBattery())
 		case "--capacity":
 			capacity, _ := readCapacity()
 			fmt.Println(capacity)
@@ -103,6 +109,8 @@ func main() {
 	}
 
 }
+
+
 
 
 
