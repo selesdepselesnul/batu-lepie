@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"strconv"
+	"regexp"
 )
 
 type Battery struct {
@@ -12,7 +13,22 @@ type Battery struct {
 	status string
 }
 
-const batteryPath = "/sys/class/power_supply/BAT1/"
+const powerSupplyPath = "/sys/class/power_supply/"
+
+func readBatteryVendor() string {
+	files, _ := ioutil.ReadDir(powerSupplyPath)
+	for _, f := range files {
+		name := f.Name()
+		match, _ := regexp.MatchString("BAT.*", name)
+		if match {
+			return name
+		}
+    }
+
+	return "";
+}
+
+var batteryPath string = "/sys/class/power_supply/" + readBatteryVendor() + "/"
 
 func trimNL(content []byte) string {
 	return strings.TrimSuffix(string(content), "\n")
@@ -66,5 +82,6 @@ func readBattery() *Battery {
 func main() {
 	fmt.Println(readBattery())
 }
+
 
 
