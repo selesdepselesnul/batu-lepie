@@ -12,11 +12,43 @@ type Battery struct {
 	status string
 }
 
-func readBattery() (*Battery, error) {
-	const batteryPath = "/sys/class/power_supply/BAT1/"
+const batteryPath = "/sys/class/power_supply/BAT1/"
+
+func trimNL(content []byte) string {
+	return strings.TrimSuffix(string(content), "\n")
+}
+
+func readCapacity() (int, error) {
+	capacity, err := ioutil.ReadFile(batteryPath + "capacity")
+
+	if err != nil {
+		return 0, err
+	}
+
+	parsedCapacity, errParsed := strconv.Atoi(trimNL(capacity))
+
+	if errParsed != nil {
+		return 0, errParsed
+	}
 	
-	capacity, errCapacity := ioutil.ReadFile(batteryPath + "capacity")
-	status, errStatus := ioutil.ReadFile(batteryPath + "status")
+	return parsedCapacity, nil
+}
+
+func readStatus() (*string, error) {
+	status, err := ioutil.ReadFile(batteryPath + "status")
+
+	if err != nil {
+		return nil, err
+	}
+
+	statusStr := trimNL(status)
+	return &statusStr, nil
+}
+
+func readBattery() (*Battery, error) {
+	
+	capacity, errCapacity := readCapacity()
+	status, errStatus := readStatus()
 	
 	if errCapacity != nil || errStatus != nil {
 		if errCapacity != nil {
@@ -25,21 +57,10 @@ func readBattery() (*Battery, error) {
 			return nil, errStatus
 		}
 	}
-
-	capacityInt, errCapacityParsed := strconv.Atoi(strings.TrimSuffix(string(capacity), "\n"))
-
-	if errCapacityParsed != nil {
-		return nil, errCapacityParsed
-	}
 	
-	return &Battery{capacity: capacityInt, status: string(status)}, nil
+	return &Battery{capacity: capacity, status: *status}, nil
 }
 
 func main() {
 	fmt.Println(readBattery())
 }
-
-
-
-
-
